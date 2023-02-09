@@ -120,10 +120,24 @@ model PlayerCharacter {
     bonds               NonPlayerCharacter[] @relation("bonds")
 }
 
-model Asset {
-    id               String            @id @default(cuid())
+model AssetTemplate {
+    id               String  @id @default(cuid())
     name             String
-    playerCharacters PlayerCharacter[]
+    playerCharacters Asset[]
+    type             String
+}
+
+model AssetAbility {
+    id String @id @default(cuid())
+}
+
+model Asset {
+    assetId     String
+    asset       AssetTemplate   @relation(fields: [assetId], references: [id])
+    characterId String
+    character   PlayerCharacter @relation(fields: [characterId], references: [id])
+
+    @@id([assetId, characterId])
 }
 
 model NonPlayerCharacter {
@@ -160,4 +174,17 @@ model Vehicle {
     id   String  @id @default(cuid())
     name String?
     type String?
+}
+
+model OracleTable {
+    id   String @id @default(cuid())
+    name String
+}
+
+model OracleResult {
+    id           String         @id @default(cuid())
+    description  String?
+    weight       Int
+    references   OracleResult[] @relation("References")
+    referencedBy OracleResult[] @relation("References")
 }
