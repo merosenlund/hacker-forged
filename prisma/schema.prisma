@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "mysql"
     // NOTE: When using postgresql, mysql or sqlserver, uncomment the @db.Text annotations in model Account below
     // Further reading:
     // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
@@ -27,12 +27,12 @@ model Account {
     type              String
     provider          String
     providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
     expires_at        Int?
     token_type        String?
     scope             String?
-    id_token          String? // @db.Text
+    id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -48,13 +48,14 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
+    id            String     @id @default(cuid())
     name          String?
-    email         String?   @unique
+    email         String?    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    campaigns     Campaign[]
 }
 
 model VerificationToken {
@@ -63,4 +64,100 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model World {
+    id        String     @id @default(cuid())
+    name      String?
+    campaigns Campaign[]
+}
+
+model Campaign {
+    id               String            @id @default(cuid())
+    name             String?
+    users            User[]
+    world            World             @relation(fields: [worldId], references: [id])
+    worldId          String
+    playerCharacters PlayerCharacter[]
+}
+
+model PlayerCharacter {
+    id                  String               @id @default(cuid())
+    name                String
+    pronouns            String
+    callsign            String
+    characteristics     String
+    campaignId          String
+    gear                String
+    notes               String
+    campaign            Campaign             @relation(fields: [campaignId], references: [id])
+    edge                Int                  @db.TinyInt
+    heart               Int                  @db.TinyInt
+    iron                Int                  @db.TinyInt
+    shadow              Int                  @db.TinyInt
+    wits                Int                  @db.TinyInt
+    momentum            Int                  @db.TinyInt
+    maxMomentum         Int                  @db.TinyInt
+    momentumReset       Int                  @db.TinyInt
+    assets              Asset[]
+    questsProgress      Int
+    bondsProgress       Int
+    discoveriesProgress Int
+    wounded             Boolean              @default(false)
+    shaken              Boolean              @default(false)
+    unprepared          Boolean              @default(false)
+    permenantlyHarmed   Boolean              @default(false)
+    traumatized         Boolean              @default(false)
+    doomed              Boolean              @default(false)
+    tormented           Boolean              @default(false)
+    indebted            Boolean              @default(false)
+    battered            Boolean              @default(false)
+    cursed              Boolean              @default(false)
+    sectorId            String?
+    systemId            String?
+    planetId            String?
+    connections         ConnectionProgress[]
+    bonds               NonPlayerCharacter[] @relation("bonds")
+}
+
+model Asset {
+    id               String            @id @default(cuid())
+    name             String
+    playerCharacters PlayerCharacter[]
+}
+
+model NonPlayerCharacter {
+    id             String               @id @default(cuid())
+    name           String?
+    pronouns       String?
+    role           String?
+    callsign       String?
+    disposition    String?
+    goal           String?
+    firstLook      String?
+    revealedAspect String?
+    notes          String?
+    connections    ConnectionProgress[]
+    bonds          PlayerCharacter[]    @relation("bonds")
+    sectorId       String?
+    systemId       String?
+    planetId       String?
+    settlementId   String?
+    vehicleId      String?
+}
+
+model ConnectionProgress {
+    nonPlayerCharacterId String
+    nonPlayerCharacter   NonPlayerCharacter @relation(fields: [nonPlayerCharacterId], references: [id])
+    playerCharacterId    String
+    playerCharacter      PlayerCharacter    @relation(fields: [playerCharacterId], references: [id])
+    progress             Int                @default(0)
+
+    @@id([nonPlayerCharacterId, playerCharacterId])
+}
+
+model Vehicle {
+    id   String  @id @default(cuid())
+    name String?
+    type String?
 }
