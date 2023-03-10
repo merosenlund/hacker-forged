@@ -48,14 +48,15 @@ model Session {
 }
 
 model User {
-    id            String     @id @default(cuid())
+    id            String         @id @default(cuid())
     name          String?
-    email         String?    @unique
+    email         String?        @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
     campaigns     Campaign[]
+    journals      JournalEntry[]
 }
 
 model VerificationToken {
@@ -79,6 +80,7 @@ model Campaign {
     world            World             @relation(fields: [worldId], references: [id])
     worldId          String
     playerCharacters PlayerCharacter[]
+    journals         JournalEntry[]
 }
 
 model PlayerCharacter {
@@ -187,4 +189,15 @@ model OracleResult {
     weight       Int
     references   OracleResult[] @relation("References")
     referencedBy OracleResult[] @relation("References")
+}
+
+model JournalEntry {
+    id         String   @id @default(cuid())
+    userId     String
+    user       User     @relation(fields: [userId], references: [id])
+    campaignId String
+    campaign   Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model JournalComment {
 }
